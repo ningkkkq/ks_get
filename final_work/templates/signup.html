@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up</title>
+    <script src="/static/jquery-1.11.3.js"></script>
+    <script src="/static/md5.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+    <style type="text/css">
+        table{
+            width: 700px;
+            position: absolute;
+            left: 35%;
+            top: 20%;
+        }
+        button{
+            position: relative;
+            left: 15%;
+        }
+        .msg{
+            color: brown;
+            position: relative;
+            left: 15%;
+
+        }
+    </style>
+    <script>
+        function getMD5(val){
+            val = hex_md5(val);
+            return val;
+        }
+        $(document).ready(function () {
+            $('#signup').click(function () {
+                var password = $('#id_password').val();
+                if (password !== '') {
+                    password = getMD5(password);
+                    $('#id_password').val(password);
+                }
+            })
+        })
+    </script>
+</head>
+<body>
+<form action="/login/signup/" method="post">
+    <table>
+        <tr>
+            <td class="phone" width="50px">
+                手机号
+            </td>
+            <td colspan="2">
+                <input type="text" name="uid" class="input" placeholder="请输入手机号码">
+            </td>
+        </tr>
+        <tr>
+            <td class="phone">
+                &nbsp密 码
+            </td>
+            <td colspan="2">
+                <input type="password" name="password" id="id_password" class="input" placeholder="请输入密码">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <button  type="submit" id='signup' class="buttonRegister">注册</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <P class="msg">{{ msg }}</P>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>

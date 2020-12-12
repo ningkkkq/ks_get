@@ -1,0 +1,7 @@
+{
+  "name": "final_work",
+  "version": "1.0.0",
+  "dependencies": {
+    "js-md5": "^0.7.3"
+  }
+}

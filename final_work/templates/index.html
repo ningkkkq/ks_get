@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TikTok</title>
+    <meta name="referrer" content="no-referrer"/>
+    <link rel="icon" href="./static/image/kkb.png">
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="/static/swiper/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="/static/swiper/swiper-bundle.min.css">
+{#    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>#}
+    <script src="/static/flexable.js"></script>
+    <script src="/static/data.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<div id="app">
+
+    <!-- 视频翻页 -->
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide" v-for="v in videos" @click="decideClick(v.id,$event)">
+                <!-- 播放按钮 -->
+                <img v-show="!v.playing" class="play-btn" src="/static/image/play.png" alt="">
+
+                <!-- 头像 -->
+                <img :src="v.author" class="author" alt="" srcset="">
+                <!-- 获得赞的数量 -->
+                <div class="reward-num">
+                    <img src="/static/image/active.png" alt="" srcset="">
+                    {#禁用Django模版渲染#}
+                    {% verbatim %}
+                    <p>{{ v.likenum }}</p>
+                    {% endverbatim %}
+                </div>
+
+                <!-- 点赞出现的心 -->
+                <div class="hearts">
+                    <img v-for="h in hearts" :key="h.id" :style="{left:h.x + 'px',top:h.y+'px'}"
+                         src="/static/image/active.png" alt="">
+                </div>
+
+                <video x5-video-player-fullscreen="true" webkit-playsinline="true" x-webkit-airplay="true"
+                       playsinline="true" x5-playsinline :id="'v-'+v.id" :src="v.videoUrl" :poster="v.poster">
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <footer>
+        <ul>
+            <li>首页</li>
+            <li>朋友</li>
+            <li><img src="/static/image/kkb.png" alt=""></li>
+            <li>
+                <a href="">获取视频</a>
+            </li>
+            <li>
+                <a href="/play/logout/">注销</a>
+            </li>
+        </ul>
+    </footer>
+
+</div>
+<script>
+    // swiper距离屏幕左距离
+    const screenW = document.querySelector('.swiper-container').offsetLeft //屏幕宽度
+    const Index = Math.floor(Math.random() * 413)
+    console.log(Index)
+    const endIndex = Index + 10
+    // 随机截取10个视频
+    const newVIDEOS = VIDEOS.slice(Index, endIndex)
+    console.log(newVIDEOS)
+    const app = {
+        data() {
+            return {
+                lastIndex: 0, //上一页的id
+                currentIndex: Index, //当前页的id
+                videos: newVIDEOS, //视频数据
+                dbl_start: 0, //用于判断双击，记录开始时间
+                timer: null, //定时器
+                hearts: [], //保存心的坐标
+            }
+        },
+        mounted() {
+            let _self = this;
+            // 初始化swiper
+            var mySwiper = new Swiper('.swiper-container', {
+                direction: 'vertical',
+                on: {
+                    slideChangeTransitionEnd: function () {
+                        // 划屏翻页。当前页停止视频播放，下一页开始播放
+                        _self.lastIndex = _self.currentIndex
+                        _self.currentIndex = this.activeIndex+Index
+                        // 切换视频播放
+                        _self.switchVideo()
+
+                    },
+                },
+            })
+        },
+        methods: {
+            // addVideo() {
+            //     var newIndex = Math.floor(Math.random()*6)
+            //     this.videos.push(VIDEOS[newIndex]);
+            //     if(this.videos.length > 4){
+            //         this.videos = this.videos.splice(0,1);
+            //     }
+            // },
+            switchVideo() {
+                // 当前页停止视频播放，下一页开始播放
+                document.querySelector("#v-" + this.lastIndex).pause()
+                document.querySelector("#v-" + this.currentIndex).play()
+                // 修改playing属性，playing属性记录当前视频播放状态。可以控制播放按钮的显示
+                this.videos.forEach(v => {
+                    if (v.id === this.lastIndex) {
+                        v.playing = false
+                    } else if (v.id === this.currentIndex) {
+                        v.playing = true
+                    }
+                })
+            },
+            // 单击控制视频播放
+            playVideo(id) {
+
+                this.videos.forEach(v => {
+                    if (v.id === id) {
+                        if (v.playing) {
+                            v.playing = false
+                            document.querySelector("#v-" + id).pause()
+                        } else {
+                            v.playing = true
+                            document.querySelector("#v-" + id).play()
+                        }
+                    }
+                });
+            },
+            // 双击点赞
+            likes(e, id) {
+                console.log(e)
+                // 获取点击坐标保存到hearts数组，用于生成小心心
+                let x = e.clientX - screenW - 20;
+                let y = e.clientY - 20;
+
+                this.hearts.push({
+                    x,
+                    y,
+                    id: new Date().getTime()
+                })
+                // 队列长度如果大于5，则踢出队列第一位
+                if (this.hearts.length > 5) {
+                    this.hearts.shift()
+                }
+            },
+            // 判断单击还是双击
+            decideClick(id, e) {
+                clearTimeout(this.timer)
+                // 开启定时器。如果300ms后没有再次点击，则认为是单击
+                this.timer = setTimeout(() => {
+                    clearTimeout(this.timer)
+                    this.playVideo(id)
+                    console.log('单击...')
+                    this.dbl_start = 0;
+                }, 300)
+
+                // 如果两次点击事件间隔小于300ms，则认为是双击
+                if (this.dbl_start === 0) {
+                    this.dbl_start = new Date().getTime()
+                } else {
+                    // 获得第二次点击事件
+                    let now = new Date().getTime()
+                    // 计算两次点击时间差值，如果小于300ms，则认为值双击
+                    var delta = now - this.dbl_start
+
+                    if (delta <= 300) {
+                        //如果是双击则取消单击
+                        clearTimeout(this.timer)
+                        // 双击点赞
+                        this.likes(e, id)
+                    }
+                    // 重置时间
+                    this.dbl_start = 0;
+                }
+            }
+        }
+    }
+
+    Vue.createApp(app).mount('#app')
+</script>
+</body>
+
+</html>

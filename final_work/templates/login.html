@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <script src="/static/flexable.js"></script>
+    <script src="/static/md5.js"></script>
+    <script src="/static/jquery-1.11.3.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+    <style type="text/css">
+        .msg{
+            color: brown;
+        }
+    </style>
+    <script>
+        function getMD5(val){
+            val = hex_md5(val);
+            return val;
+        }
+        $(document).ready(function () {
+            $('#login').click(function () {
+                var password = $('#id_password').val();
+                if(password !== '') {
+                    password = getMD5(password);
+                    $('#id_password').val(password);
+                }
+            });
+            $('#signup').click(function () {
+                $('#id_form').attr(
+                    {'action': '/login/signup/',
+                        'method': 'get'}
+                    );
+            });
+        })
+    </script>
+</head>
+<body>
+    <div id="app">
+        <table id="table_login">
+            <tr>
+                <td colspan="2" class="firstLine">
+                    用户登陆
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <br>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <img src="/static/image/kuai.png" width="250px">
+                </td>
+                <td>
+                    <form id="id_form" action="/login/" method="post">
+                    <table>
+                        <tr>
+                            <td class="phone" width="50px">
+                                手机号
+                            </td>
+                            <td colspan="2">
+                                <input type="text" name="uid" class="input" placeholder="请输入手机号码">
+                            </td>
+                        </tr>
+                         <tr>
+                            <td class="phone">
+                                &nbsp密 码
+                            </td>
+                            <td colspan="2">
+                                <input type="password" name="password" id="id_password" class="input" placeholder="请输入密码">
+                            </td>
+                        </tr>
+                         <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" name="remember" class="checkbox">
+                                <span class="a">记住密码</span>
+                            </td>
+                             <td>
+                                <p class="msg">{{msg}}</p>
+                             </td>
+                        </tr>
+                         <tr>
+                            <td></td>
+                            <td width="150px">
+                                <button type="submit" id='login' class="buttonLogin">登录</button>
+                            </td>
+                            <td>
+                                <button type='submit' id='signup' class="buttonRegister">注册</button>
+                            </td>
+                        </tr>
+                    </table>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
